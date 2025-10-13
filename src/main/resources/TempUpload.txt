@@ -1,0 +1,50 @@
+import org.apache.poi.ss.usermodel.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+public class ExcelToCsvConverter {
+    public static void main(String[] args) throws Exception {
+        String inputPath = "input.xlsx";
+        String outputPath = "output.csv";
+
+        // Example map (replace with your own values)
+        Map<String, String> scopeMap = Map.of(
+                "key1", "val1",
+                "key2", "val2"
+        );
+
+        try (Workbook wb = WorkbookFactory.create(new File(inputPath));
+             BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputPath))) {
+
+            writer.write("path,value,scope_id,scope_type\n");
+
+            Sheet sheet = wb.getSheetAt(0);
+            boolean header = true;
+
+            for (Row row : sheet) {
+                if (header) { header = false; continue; } // skip header
+
+                String key   = getCellValue(row, 0);
+                String val1  = getCellValue(row, 1);
+                String val2  = getCellValue(row, 2);
+                String scope = scopeMap.getOrDefault(key, "");
+
+                writer.write(String.join(",", "A$BC", val1, scope, "Bonn") + "\n");
+                writer.write(String.join(",", "D$EF", val2, scope, "Bonn") + "\n");
+            }
+        }
+        System.out.println("CSV created: " + outputPath);
+    }
+
+    private static String getCellValue(Row row, int idx) {
+        Cell cell = row.getCell(idx);
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            default -> "";
+        };
+    }
+}
