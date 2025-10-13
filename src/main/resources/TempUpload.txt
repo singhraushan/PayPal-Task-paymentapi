@@ -1,24 +1,29 @@
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.core.io.ClassPathResource;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
 public class ExcelToCsvConverter {
-    public static void main(String[] args) throws Exception {
-        String inputPath = "input.xlsx";
-        String outputPath = "output.csv";
 
-        // Example map (replace with your own values)
+    public static void main(String[] args) throws Exception {
+        new ExcelToCsvConverter().convert();
+    }
+
+    public void convert() throws Exception {
+        // Your map (replace with actual data)
         Map<String, String> scopeMap = Map.of(
                 "key1", "val1",
                 "key2", "val2"
         );
 
-        try (Workbook wb = WorkbookFactory.create(new File(inputPath));
-             BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputPath))) {
+        // Load Excel file from resources
+        var resource = new ClassPathResource("input.xlsx");
+        try (InputStream is = resource.getInputStream();
+             Workbook wb = WorkbookFactory.create(is);
+             BufferedWriter writer = Files.newBufferedWriter(Paths.get("output.csv"))) {
 
             writer.write("path,value,scope_id,scope_type\n");
-
             Sheet sheet = wb.getSheetAt(0);
             boolean header = true;
 
@@ -34,7 +39,7 @@ public class ExcelToCsvConverter {
                 writer.write(String.join(",", "D$EF", val2, scope, "Bonn") + "\n");
             }
         }
-        System.out.println("CSV created: " + outputPath);
+        System.out.println("✅ CSV created successfully at project root: output.csv");
     }
 
     private static String getCellValue(Row row, int idx) {
